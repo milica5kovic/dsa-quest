@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Plan from "./pages/Plan";
 import Worksheets from "./pages/Worksheets";
 import Problems from "./pages/Problems";
+import Visualizer from "./pages/Visualizer";
 import Career from "./pages/Career";
 import { useProgress } from "./hooks/useProgress";
 
@@ -23,18 +24,16 @@ export default function App() {
     );
   }
 
-  const xp = progress?.xp || 0;
-  const level = progress?.level || 1;
-
   return (
     <BrowserRouter>
-      <Nav xp={xp} level={level} />
+      <Nav xp={progress?.xp || 0} level={progress?.level || 1} />
       <main style={{ position: "relative", zIndex: 1 }}>
         <Routes>
           <Route path="/" element={<Dashboard progress={progress} logDay={logDay} clearDay={clearDay} />} />
           <Route path="/plan" element={<Plan progress={progress} />} />
           <Route path="/worksheets" element={<Worksheets progress={progress} toggleWorksheet={toggleWorksheet} />} />
           <Route path="/problems" element={<Problems progress={progress} toggleProblem={toggleProblem} />} />
+          <Route path="/visualizer" element={<Visualizer />} />
           <Route path="/career" element={<Career />} />
         </Routes>
       </main>
@@ -44,6 +43,6 @@ export default function App() {
 
 const loadingStyle = { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", background: "#FAF8FF" };
 const spinnerStyle = { width: "40px", height: "40px", border: "3px solid #EDE8FF", borderTopColor: "#A08FD6", borderRadius: "50%", animation: "spin 0.8s linear infinite" };
-const s = document.createElement("style");
-s.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
-document.head.appendChild(s);
+const st = document.createElement("style");
+st.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
+document.head.appendChild(st);
