@@ -1,7 +1,6 @@
 // src/hooks/useProgress.js
 import { useState, useEffect } from "react";
-import { db } from "../firebase";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { supabase } from "../supabase";
 
 const USER_ID = "mia";
 
@@ -9,22 +8,31 @@ export function useProgress() {
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [firebaseOk, setFirebaseOk] = useState(true);
-  const docRef = doc(db, "progress", USER_ID);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          setProgress(snap.data());
-        } else {
+        const { data, error } = await supabase
+          .from("progress")
+          .select("data")
+          .eq("user_id", USER_ID)
+          .single();
+
+        if (error && error.code === "PGRST116") {
           const initial = buildInitialProgress();
-          await setDoc(docRef, initial);
+          const { error: insertError } = await supabase
+            .from("progress")
+            .insert({ user_id: USER_ID, data: initial });
+          if (insertError) throw insertError;
           setProgress(initial);
+        } else if (error) {
+          throw error;
+        } else {
+          setProgress(data.data);
         }
         setFirebaseOk(true);
       } catch (e) {
-        console.error("[Firebase load error]", e.code, e.message);
+        console.error("[Supabase load error]", e.message);
         setFirebaseOk(false);
         const local = localStorage.getItem("dsa_progress");
         setProgress(local ? JSON.parse(local) : buildInitialProgress());
@@ -38,10 +46,13 @@ export function useProgress() {
     setProgress(updated);
     localStorage.setItem("dsa_progress", JSON.stringify(updated));
     try {
-      await setDoc(docRef, { ...updated, updatedAt: serverTimestamp() }, { merge: true });
+      const { error } = await supabase
+        .from("progress")
+        .upsert({ user_id: USER_ID, data: updated, updated_at: new Date().toISOString() });
+      if (error) throw error;
       setFirebaseOk(true);
     } catch (e) {
-      console.error("[Firebase save error]", e.code, e.message);
+      console.error("[Supabase save error]", e.message);
       setFirebaseOk(false);
     }
   };

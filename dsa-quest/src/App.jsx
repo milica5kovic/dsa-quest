@@ -29,7 +29,7 @@ export default function App() {
       <Nav xp={progress?.xp || 0} level={progress?.level || 1} streak={progress?.streak || 0} />
       {!firebaseOk && (
         <div style={warnStyle}>
-          ⚠️ Firebase nije povezan — podaci se čuvaju samo lokalno i mogu nestati. Provjeri Firestore Rules i konzolu (F12).
+          ⚠️ Supabase nije povezan — podaci se čuvaju samo lokalno i mogu nestati. Provjeri konzolu (F12).
         </div>
       )}
       <main style={{ position: "relative", zIndex: 1 }}>
