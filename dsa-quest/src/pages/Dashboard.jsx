@@ -36,7 +36,7 @@ export default function Dashboard({ progress, toggleTask, logDay, clearDay }) {
     if (allTasksDone && !todayLogged && logDay) {
       logDay(today, { done: true, note: "All daily tasks completed ✨" });
     }
-  }, [allTasksDone]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [allTasksDone]); // eslint-disable-line
 
   if (!progress) return (
     <div style={{ padding: "3rem", textAlign: "center", color: "#A89EC0", fontFamily: "'Sora', sans-serif" }}>
