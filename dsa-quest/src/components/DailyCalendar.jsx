@@ -4,7 +4,7 @@ import { useState } from "react";
 const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
 
 function toKey(date) {
-  return date.toISOString().slice(0, 10);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function getMonthDays(year, month) {

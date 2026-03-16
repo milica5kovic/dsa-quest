@@ -11,7 +11,7 @@ import Career from "./pages/Career";
 import { useProgress } from "./hooks/useProgress";
 
 export default function App() {
-  const { progress, loading, toggleProblem, toggleTask, toggleWorksheet, logDay, clearDay } = useProgress();
+  const { progress, loading, firebaseOk, toggleProblem, toggleTask, toggleWorksheet, logDay, clearDay } = useProgress();
 
   if (loading) {
     return (
@@ -26,13 +26,18 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Nav xp={progress?.xp || 0} level={progress?.level || 1} />
+      <Nav xp={progress?.xp || 0} level={progress?.level || 1} streak={progress?.streak || 0} />
+      {!firebaseOk && (
+        <div style={warnStyle}>
+          ⚠️ Firebase nije povezan — podaci se čuvaju samo lokalno i mogu nestati. Provjeri Firestore Rules i konzolu (F12).
+        </div>
+      )}
       <main style={{ position: "relative", zIndex: 1 }}>
         <Routes>
-          <Route path="/" element={<Dashboard progress={progress} logDay={logDay} clearDay={clearDay} />} />
+          <Route path="/" element={<Dashboard progress={progress} toggleTask={toggleTask} logDay={logDay} clearDay={clearDay} />} />
           <Route path="/plan" element={<Plan progress={progress} />} />
           <Route path="/worksheets" element={<Worksheets progress={progress} toggleWorksheet={toggleWorksheet} />} />
-          <Route path="/problems" element={<Problems progress={progress} toggleProblem={toggleProblem} />} />
+          <Route path="/problems" element={<Problems progress={progress} toggleProblem={toggleProblem} toggleTask={toggleTask} />} />
           <Route path="/visualizer" element={<Visualizer />} />
           <Route path="/career" element={<Career />} />
         </Routes>
@@ -41,6 +46,7 @@ export default function App() {
   );
 }
 
+const warnStyle = { background: "#FFF3C2", borderBottom: "1.5px solid #E8C840", padding: "8px 1.5rem", fontSize: "12px", fontWeight: 600, color: "#7A5800", fontFamily: "'Sora', sans-serif" };
 const loadingStyle = { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", background: "#FAF8FF" };
 const spinnerStyle = { width: "40px", height: "40px", border: "3px solid #EDE8FF", borderTopColor: "#A08FD6", borderRadius: "50%", animation: "spin 0.8s linear infinite" };
 const st = document.createElement("style");

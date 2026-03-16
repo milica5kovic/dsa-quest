@@ -5,10 +5,15 @@ import { WEEKS } from "../data/plan";
 const DIFF_COLORS = { Easy: "#C2F0DC", Medium: "#D4C5F9", Hard: "#FFD6E0" };
 const DIFF_TEXT = { Easy: "#4A8F72", Medium: "#7060C0", Hard: "#C05080" };
 
-export default function Problems({ progress, toggleProblem }) {
+const MONTHS = [1, 2, 3, 4];
+const MONTH_LABELS = { 1: "Month 1", 2: "Month 2", 3: "Month 3", 4: "Month 4" };
+
+export default function Problems({ progress, toggleProblem, toggleTask }) {
+  const [activeMonth, setActiveMonth] = useState(1);
   const [activeWeek, setActiveWeek] = useState(1);
-  const { completedProblems = {} } = progress || {};
+  const { completedProblems = {}, completedTasks = {} } = progress || {};
   const week = WEEKS.find(w => w.id === activeWeek);
+  const monthWeeks = WEEKS.filter(w => w.month === activeMonth);
 
   const solved = week.problems.filter(p => completedProblems[`w${week.id}_${p.id}`]).length;
   const pct = Math.round((solved / week.problems.length) * 100);
@@ -20,9 +25,29 @@ export default function Problems({ progress, toggleProblem }) {
         <p style={styles.sub}>Track your solutions and earn XP. +15 XP per problem.</p>
       </div>
 
-      {/* Week tabs */}
+      {/* Month filter */}
+      <div style={styles.monthRow}>
+        {MONTHS.map(m => {
+          const mWeeks = WEEKS.filter(w => w.month === m);
+          const mSolved = mWeeks.reduce((a, w) => a + w.problems.filter(p => completedProblems[`w${w.id}_${p.id}`]).length, 0);
+          const mTotal = mWeeks.reduce((a, w) => a + w.problems.length, 0);
+          const mPct = Math.round((mSolved / mTotal) * 100);
+          return (
+            <button
+              key={m}
+              onClick={() => { setActiveMonth(m); setActiveWeek(WEEKS.find(w => w.month === m).id); }}
+              style={{ ...styles.monthBtn, background: activeMonth === m ? "#2D2640" : "#FFF", color: activeMonth === m ? "#FFF" : "#7B6F96", borderColor: activeMonth === m ? "#2D2640" : "#EDE8FF" }}
+            >
+              <span style={{ fontWeight: 700 }}>{MONTH_LABELS[m]}</span>
+              <span style={{ fontSize: "11px", opacity: 0.8 }}>{mPct}%</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Week tabs — only current month */}
       <div style={styles.tabs}>
-        {WEEKS.map(w => {
+        {monthWeeks.map(w => {
           const wsolved = w.problems.filter(p => completedProblems[`w${w.id}_${p.id}`]).length;
           const wpct = Math.round((wsolved / w.problems.length) * 100);
           return (
@@ -82,12 +107,23 @@ export default function Problems({ progress, toggleProblem }) {
       </div>
 
       {/* Portfolio task */}
-      <div style={styles.portfolioTask}>
-        <span>🗂️</span>
-        <div>
-          <strong>Portfolio task this week:</strong> {week.portfolioTask}
-        </div>
-      </div>
+      {(() => {
+        const ptKey = `portfolio-w${week.id}`;
+        const ptDone = !!completedTasks[ptKey];
+        return (
+          <div
+            style={{ ...styles.portfolioTask, cursor: "pointer", opacity: ptDone ? 0.7 : 1, background: ptDone ? "#E8F8EF" : "#FFF3C2", borderColor: ptDone ? "#A0D8B8" : "#E8D088" }}
+            onClick={() => toggleTask && toggleTask(ptKey)}
+          >
+            <div style={{ ...styles.ptCheck, background: ptDone ? "#72C9A0" : "#FFF", borderColor: ptDone ? "#72C9A0" : "#C8A030" }}>
+              {ptDone && <span style={{ color: "white", fontSize: "11px" }}>✓</span>}
+            </div>
+            <div style={{ textDecoration: ptDone ? "line-through" : "none" }}>
+              <strong>Portfolio task this week:</strong> {week.portfolioTask}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Big-O focus */}
       <div style={styles.bigOCard}>
@@ -150,6 +186,8 @@ const styles = {
   header: { marginBottom: "1.5rem" },
   title: { fontSize: "clamp(22px, 5vw, 30px)", fontWeight: 700, color: "#2D2640" },
   sub: { fontSize: "14px", color: "#7B6F96", marginTop: "4px" },
+  monthRow: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", marginBottom: "10px" },
+  monthBtn: { display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", padding: "8px 10px", borderRadius: "12px", border: "1.5px solid", cursor: "pointer", fontFamily: "'Sora', sans-serif", fontSize: "13px", transition: "all 0.2s" },
   tabs: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "8px", marginBottom: "1.25rem" },
   tab: { display: "flex", alignItems: "center", gap: "8px", padding: "10px 12px", borderRadius: "12px", border: "1.5px solid", cursor: "pointer", textAlign: "left", transition: "all 0.2s", fontFamily: "'Sora', sans-serif" },
   weekBanner: { borderRadius: "18px", padding: "1.5rem", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" },
@@ -160,7 +198,8 @@ const styles = {
   weekProgress: { display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" },
   progressCircle: { position: "relative", width: "70px", height: "70px" },
   circleText: { position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "15px", color: "#2D2640" },
-  portfolioTask: { background: "#FFF3C2", border: "1.5px solid #E8D088", borderRadius: "12px", padding: "0.875rem 1rem", marginBottom: "8px", display: "flex", gap: "8px", alignItems: "flex-start", fontSize: "13px", color: "#4A3F20" },
+  portfolioTask: { border: "1.5px solid", borderRadius: "12px", padding: "0.875rem 1rem", marginBottom: "8px", display: "flex", gap: "8px", alignItems: "center", fontSize: "13px", color: "#4A3F20", transition: "all 0.2s" },
+  ptCheck: { width: "20px", height: "20px", borderRadius: "6px", border: "2px solid", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s" },
   bigOCard: { background: "#E8D5FF", border: "1.5px solid #C8A8FF", borderRadius: "12px", padding: "0.875rem 1rem", marginBottom: "1.5rem", display: "flex", gap: "8px", alignItems: "flex-start", fontSize: "13px", color: "#3D2A60" },
   problemList: { display: "flex", flexDirection: "column", gap: "8px" },
   problemCard: { background: "#FFF", border: "1.5px solid #EDE8FF", borderRadius: "14px", padding: "1rem", display: "flex", alignItems: "flex-start", gap: "12px", cursor: "pointer", transition: "all 0.15s", boxShadow: "0 2px 12px rgba(120,100,200,0.04)" },

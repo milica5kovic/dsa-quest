@@ -1,13 +1,14 @@
 // src/hooks/useProgress.js
 import { useState, useEffect } from "react";
 import { db } from "../firebase";
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 const USER_ID = "mia";
 
 export function useProgress() {
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [firebaseOk, setFirebaseOk] = useState(true);
   const docRef = doc(db, "progress", USER_ID);
 
   useEffect(() => {
@@ -21,8 +22,10 @@ export function useProgress() {
           await setDoc(docRef, initial);
           setProgress(initial);
         }
+        setFirebaseOk(true);
       } catch (e) {
-        console.warn("Firebase unavailable, using localStorage fallback", e);
+        console.error("[Firebase load error]", e.code, e.message);
+        setFirebaseOk(false);
         const local = localStorage.getItem("dsa_progress");
         setProgress(local ? JSON.parse(local) : buildInitialProgress());
       }
@@ -35,9 +38,11 @@ export function useProgress() {
     setProgress(updated);
     localStorage.setItem("dsa_progress", JSON.stringify(updated));
     try {
-      await updateDoc(docRef, { ...updated, updatedAt: serverTimestamp() });
+      await setDoc(docRef, { ...updated, updatedAt: serverTimestamp() }, { merge: true });
+      setFirebaseOk(true);
     } catch (e) {
-      console.warn("Offline — saved to localStorage only");
+      console.error("[Firebase save error]", e.code, e.message);
+      setFirebaseOk(false);
     }
   };
 
@@ -99,7 +104,7 @@ export function useProgress() {
     await save(updated);
   };
 
-  return { progress, loading, toggleProblem, toggleTask, toggleWorksheet, logDay, clearDay };
+  return { progress, loading, firebaseOk, toggleProblem, toggleTask, toggleWorksheet, logDay, clearDay };
 }
 
 function computeXP(completed) {
@@ -117,14 +122,17 @@ function computeLevel(xp) {
   return 1;
 }
 
+function localDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 function computeStreak(dailyLog = {}) {
   let streak = 0;
   const today = new Date();
   for (let i = 0; i < 365; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
-    if (dailyLog[key]?.done) streak++;
+    if (dailyLog[localDateKey(d)]?.done) streak++;
     else break;
   }
   return streak;

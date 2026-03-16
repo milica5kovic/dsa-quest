@@ -1,5 +1,5 @@
 // src/pages/Dashboard.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { WEEKS, LEVEL_TITLES, XP_THRESHOLDS, FOUR_QUESTIONS, TWENTY_MIN_RULE } from "../data/plan";
 import DailyCalendar from "../components/DailyCalendar";
@@ -16,9 +16,27 @@ function getNextProblem(week, completedProblems) {
   return week.problems.find(p => !completedProblems[`w${week.id}_${p.id}`]);
 }
 
-export default function Dashboard({ progress, logDay, clearDay }) {
+function localDateKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+const TODAY_TASK_IDS = ["problem", "review", "ctci", "bigO"];
+
+export default function Dashboard({ progress, toggleTask, logDay, clearDay }) {
   const [ruleExpanded, setRuleExpanded] = useState(false);
-  const [todayDone, setTodayDone] = useState({});
+  const today = localDateKey();
+
+  // Extract early so useEffect can reference them (hooks must run before any early return)
+  const completedTasks = progress?.completedTasks || {};
+  const dailyLog = progress?.dailyLog || {};
+  const allTasksDone = TODAY_TASK_IDS.every(id => completedTasks[`${today}_${id}`]);
+  const todayLogged = !!dailyLog[today]?.done;
+
+  useEffect(() => {
+    if (allTasksDone && !todayLogged && logDay) {
+      logDay(today, { done: true, note: "All daily tasks completed ✨" });
+    }
+  }, [allTasksDone]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!progress) return (
     <div style={{ padding: "3rem", textAlign: "center", color: "#A89EC0", fontFamily: "'Sora', sans-serif" }}>
@@ -26,7 +44,7 @@ export default function Dashboard({ progress, logDay, clearDay }) {
     </div>
   );
 
-  const { xp = 0, level = 1, completedProblems = {}, dailyLog = {} } = progress;
+  const { xp = 0, level = 1, streak = 0, completedProblems = {} } = progress;
   const nextXP = XP_THRESHOLDS[level] || XP_THRESHOLDS[XP_THRESHOLDS.length - 1];
   const prevXP = XP_THRESHOLDS[level - 1] || 0;
   const xpPct = Math.min(100, ((xp - prevXP) / (nextXP - prevXP)) * 100);
@@ -86,25 +104,45 @@ export default function Dashboard({ progress, logDay, clearDay }) {
             </div>
             <div style={styles.weekBarLabel}>{solvedThisWeek}/{currentWeek.problems.length} problems solved this week</div>
 
-            {/* Tasks */}
-            <div style={styles.taskList}>
-              <div style={styles.taskListLabel}>📋 Do these today (80 min):</div>
-              {todayTasks.map(task => (
-                <div
-                  key={task.id}
-                  style={{ ...styles.taskItem, background: todayDone[task.id] ? "#F0FFF8" : "#FAFAFF" }}
-                  onClick={() => setTodayDone(d => ({ ...d, [task.id]: !d[task.id] }))}
-                >
-                  <div style={{ ...styles.taskCheck, background: todayDone[task.id] ? "#72C9A0" : "#FFF", borderColor: todayDone[task.id] ? "#72C9A0" : "#D4C5F9" }}>
-                    {todayDone[task.id] && <span style={{ color: "white", fontSize: "11px" }}>✓</span>}
-                  </div>
-                  <span style={{ fontSize: "13px", color: todayDone[task.id] ? "#7B6F96" : "#2D2640", textDecoration: todayDone[task.id] ? "line-through" : "none", flex: 1 }}>
-                    {task.icon} {task.label}
-                  </span>
-                  <Link to={task.link} onClick={e => e.stopPropagation()} style={styles.taskArrow}>→</Link>
+            {/* Tasks — or Day Complete banner */}
+            {todayLogged ? (
+              <div style={styles.dayDone}>
+                <div style={styles.dayDoneIcon}>🎉</div>
+                <div>
+                  <div style={styles.dayDoneTitle}>Day complete!</div>
+                  <div style={styles.dayDoneSub}>All tasks done · Day logged · Streak: {streak}🔥</div>
                 </div>
-              ))}
-            </div>
+                <button
+                  style={styles.dayDoneUndo}
+                  onClick={() => clearDay && clearDay(today)}
+                >
+                  Undo
+                </button>
+              </div>
+            ) : (
+              <div style={styles.taskList}>
+                <div style={styles.taskListLabel}>📋 Do these today (80 min):</div>
+                {todayTasks.map(task => {
+                  const key = `${today}_${task.id}`;
+                  const done = !!completedTasks[key];
+                  return (
+                    <div
+                      key={task.id}
+                      style={{ ...styles.taskItem, background: done ? "#F0FFF8" : "#FAFAFF" }}
+                      onClick={() => toggleTask && toggleTask(key)}
+                    >
+                      <div style={{ ...styles.taskCheck, background: done ? "#72C9A0" : "#FFF", borderColor: done ? "#72C9A0" : "#D4C5F9" }}>
+                        {done && <span style={{ color: "white", fontSize: "11px" }}>✓</span>}
+                      </div>
+                      <span style={{ fontSize: "13px", color: done ? "#7B6F96" : "#2D2640", textDecoration: done ? "line-through" : "none", flex: 1 }}>
+                        {task.icon} {task.label}
+                      </span>
+                      <Link to={task.link} onClick={e => e.stopPropagation()} style={styles.taskArrow}>→</Link>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Patterns */}
             <div style={styles.patterns}>
@@ -129,7 +167,7 @@ export default function Dashboard({ progress, logDay, clearDay }) {
               { val: totalSolved, label: "solved", color: "#D4C5F9" },
               { val: totalProblems - totalSolved, label: "remaining", color: "#FFD6C2" },
               { val: `W${currentWeek.id}`, label: "current week", color: "#C2F0DC" },
-              { val: WEEKS.length, label: "total weeks", color: "#C2DEFF" },
+              { val: `${streak}🔥`, label: "day streak", color: "#FFD6C2" },
             ].map((s, i) => (
               <div key={i} style={{ ...styles.statCard, background: s.color }}>
                 <div style={styles.statVal}>{s.val}</div>
@@ -227,6 +265,12 @@ const styles = {
   weekBar: { background: "#EDE8FF", borderRadius: "999px", height: "6px", overflow: "hidden", marginBottom: "5px" },
   weekBarFill: { height: "100%", borderRadius: "999px", transition: "width 0.5s" },
   weekBarLabel: { fontSize: "11px", color: "#A89EC0", marginBottom: "1.25rem" },
+
+  dayDone: { display: "flex", alignItems: "center", gap: "12px", background: "linear-gradient(135deg, #C2F0DC, #A8E8C8)", border: "1.5px solid #72C9A0", borderRadius: "14px", padding: "14px 16px", marginBottom: "1rem" },
+  dayDoneIcon: { fontSize: "28px", lineHeight: 1, flexShrink: 0 },
+  dayDoneTitle: { fontWeight: 700, fontSize: "15px", color: "#1A5C3A" },
+  dayDoneSub: { fontSize: "12px", color: "#2D7A50", marginTop: "2px" },
+  dayDoneUndo: { marginLeft: "auto", background: "rgba(255,255,255,0.6)", border: "1px solid #72C9A0", borderRadius: "8px", padding: "4px 10px", fontSize: "11px", fontWeight: 600, color: "#2D7A50", cursor: "pointer", flexShrink: 0, fontFamily: "'Sora', sans-serif" },
 
   taskList: { marginBottom: "1rem" },
   taskListLabel: { fontSize: "11px", fontWeight: 700, color: "#A89EC0", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" },
