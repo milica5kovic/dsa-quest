@@ -1,28 +1,39 @@
 // src/hooks/useProgress.js
 import { useState, useEffect } from "react";
-import { db } from "../firebase";
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { supabase } from "../supabase";
 
 const USER_ID = "mia";
 
 export function useProgress() {
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
-  const docRef = doc(db, "progress", USER_ID);
+  const [firebaseOk, setFirebaseOk] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          setProgress(snap.data());
-        } else {
+        const { data, error } = await supabase
+          .from("progress")
+          .select("data")
+          .eq("user_id", USER_ID)
+          .single();
+
+        if (error && error.code === "PGRST116") {
           const initial = buildInitialProgress();
-          await setDoc(docRef, initial);
+          const { error: insertError } = await supabase
+            .from("progress")
+            .insert({ user_id: USER_ID, data: initial });
+          if (insertError) throw insertError;
           setProgress(initial);
+        } else if (error) {
+          throw error;
+        } else {
+          setProgress(data.data);
         }
+        setFirebaseOk(true);
       } catch (e) {
-        console.warn("Firebase unavailable, using localStorage fallback", e);
+        console.error("[Supabase load error]", e.message);
+        setFirebaseOk(false);
         const local = localStorage.getItem("dsa_progress");
         setProgress(local ? JSON.parse(local) : buildInitialProgress());
       }
@@ -35,9 +46,14 @@ export function useProgress() {
     setProgress(updated);
     localStorage.setItem("dsa_progress", JSON.stringify(updated));
     try {
-      await updateDoc(docRef, { ...updated, updatedAt: serverTimestamp() });
+      const { error } = await supabase
+        .from("progress")
+        .upsert({ user_id: USER_ID, data: updated, updated_at: new Date().toISOString() });
+      if (error) throw error;
+      setFirebaseOk(true);
     } catch (e) {
-      console.warn("Offline — saved to localStorage only");
+      console.error("[Supabase save error]", e.message);
+      setFirebaseOk(false);
     }
   };
 
@@ -99,7 +115,7 @@ export function useProgress() {
     await save(updated);
   };
 
-  return { progress, loading, toggleProblem, toggleTask, toggleWorksheet, logDay, clearDay };
+  return { progress, loading, firebaseOk, toggleProblem, toggleTask, toggleWorksheet, logDay, clearDay };
 }
 
 function computeXP(completed) {
@@ -117,14 +133,17 @@ function computeLevel(xp) {
   return 1;
 }
 
+function localDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 function computeStreak(dailyLog = {}) {
   let streak = 0;
   const today = new Date();
   for (let i = 0; i < 365; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
-    if (dailyLog[key]?.done) streak++;
+    if (dailyLog[localDateKey(d)]?.done) streak++;
     else break;
   }
   return streak;
