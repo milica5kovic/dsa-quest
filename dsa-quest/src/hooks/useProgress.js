@@ -1,6 +1,7 @@
 // src/hooks/useProgress.js
 import { useState, useEffect } from "react";
 import { supabase } from "../supabase";
+import { localDateKey } from "../utils/date";
 
 const USER_ID = "mia";
 
@@ -129,12 +130,7 @@ function computeLevel(xp) {
   if (xp >= 600) return 4;
   if (xp >= 400) return 3;
   if (xp >= 250) return 2;
-  if (xp >= 100) return 1;
   return 1;
-}
-
-function localDateKey(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function computeStreak(dailyLog = {}) {

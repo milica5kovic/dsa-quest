@@ -4,9 +4,9 @@ import { Link, useLocation } from "react-router-dom";
 
 const links = [
   { to: "/", label: "Dashboard", icon: "⚡" },
-  { to: "/plan", label: "Plan", icon: "📅" },
-  { to: "/worksheets", label: "Worksheets", icon: "📝" },
   { to: "/problems", label: "Problems", icon: "💻" },
+  { to: "/worksheets", label: "Worksheets", icon: "📝" },
+  { to: "/plan", label: "Plan", icon: "📅" },
   { to: "/visualizer", label: "Visualizer", icon: "🎬" },
   { to: "/career", label: "Career", icon: "🚀" },
 ];
@@ -24,10 +24,13 @@ export default function Nav({ xp, level, streak }) {
         </Link>
 
         <div style={styles.links}>
-          {links.map(l => (
-            <Link key={l.to} to={l.to} style={{ ...styles.link, ...(location.pathname === l.to ? styles.linkActive : {}) }}>
-              <span>{l.icon}</span> {l.label}
-            </Link>
+          {links.map((l, i) => (
+            <>
+              {i === 4 && <div key="sep" style={styles.sep} />}
+              <Link key={l.to} to={l.to} style={{ ...styles.link, ...(location.pathname === l.to ? styles.linkActive : {}) }}>
+                <span>{l.icon}</span> {l.label}
+              </Link>
+            </>
           ))}
         </div>
 
@@ -75,6 +78,7 @@ const styles = {
   linkActive: { background: "#EDE8FF", color: "#2D2640", fontWeight: 600 },
   xpPill: { display: "flex", alignItems: "center", gap: "5px", background: "#EDE8FF", border: "1.5px solid #D4C5F9", borderRadius: "999px", padding: "4px 12px", fontSize: "12px", fontWeight: 600, color: "#2D2640", whiteSpace: "nowrap" },
   streakChip: { background: "#FFE8C2", color: "#B06020", borderRadius: "999px", padding: "1px 7px", fontSize: "11px", fontWeight: 700 },
+  sep: { width: "1px", height: "20px", background: "#EDE8FF", margin: "0 4px", flexShrink: 0 },
   burger: { display: "none", background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#2D2640", padding: "4px" },
   mobileMenu: { position: "fixed", top: "60px", left: 0, right: 0, background: "rgba(250,248,255,0.97)", backdropFilter: "blur(16px)", borderBottom: "1.5px solid #EDE8FF", padding: "1rem", display: "flex", flexDirection: "column", gap: "4px", zIndex: 99 },
   mobileLink: { display: "flex", alignItems: "center", gap: "8px", padding: "10px 14px", borderRadius: "10px", fontSize: "15px", fontWeight: 500, color: "#7B6F96", textDecoration: "none" },

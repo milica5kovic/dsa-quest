@@ -1,11 +1,8 @@
 // src/components/DailyCalendar.jsx
 import { useState } from "react";
+import { localDateKey } from "../utils/date";
 
 const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
-
-function toKey(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-}
 
 function getMonthDays(year, month) {
   const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
@@ -15,9 +12,9 @@ function getMonthDays(year, month) {
   return { startOffset, daysInMonth };
 }
 
-export default function DailyCalendar({ dailyLog = {}, logDay, clearDay }) {
+export default function DailyCalendar({ dailyLog = {}, logDay, clearDay, streak = 0 }) {
   const today = new Date();
-  const todayKey = toKey(today);
+  const todayKey = localDateKey(today);
 
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -41,7 +38,7 @@ export default function DailyCalendar({ dailyLog = {}, logDay, clearDay }) {
   const openDay = (dayNum) => {
     const d = new Date(viewYear, viewMonth, dayNum);
     if (d > today) return; // can't log future
-    const key = toKey(d);
+    const key = localDateKey(d);
     setSelectedDay(key);
     setNote(dailyLog[key]?.note || "");
     setShowModal(true);
@@ -64,16 +61,6 @@ export default function DailyCalendar({ dailyLog = {}, logDay, clearDay }) {
     await logDay(selectedDay, { done: false, note });
     setShowModal(false);
   };
-
-  // streak calc
-  let streak = 0;
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const k = toKey(d);
-    if (dailyLog[k]?.done) streak++;
-    else break;
-  }
 
   const doneCount = Object.values(dailyLog).filter(d => d.done).length;
 
@@ -115,7 +102,7 @@ export default function DailyCalendar({ dailyLog = {}, logDay, clearDay }) {
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const dayNum = i + 1;
             const d = new Date(viewYear, viewMonth, dayNum);
-            const key = toKey(d);
+            const key = localDateKey(d);
             const isFuture = d > today;
             const isToday = key === todayKey;
             const logEntry = dailyLog[key];

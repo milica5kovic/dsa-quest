@@ -228,6 +228,7 @@ export default function Visualizer() {
     const nums = parseInput();
     if (!nums.length) return;
     const target = parseInt(targetVal);
+    if (activeProblem.hasTarget && isNaN(target)) return;
     const s = buildSteps(activeProblem, mode, nums, target);
     setSteps(s);
     setStepIdx(0);
@@ -271,7 +272,7 @@ export default function Visualizer() {
       {/* Header */}
       <div style={s.header}>
         <h1 style={s.title}>🎬 Algorithm Visualizer</h1>
-        <p style={s.sub}>Gledaj svaki korak algoritma vizuelno. Brute force vs Optimal.</p>
+        <p style={s.sub}>Watch each algorithm step by step. Brute force vs Optimal.</p>
       </div>
 
       {/* Problem selector */}
@@ -432,14 +433,14 @@ export default function Visualizer() {
           {/* Controls */}
           <div style={s.playerControls}>
             <button style={s.ctrlBtn} onClick={handleReset}>⏮</button>
-            <button style={s.ctrlBtn} onClick={handlePrev} disabled={stepIdx === 0}>◀</button>
+            <button style={{ ...s.ctrlBtn, opacity: stepIdx === 0 ? 0.4 : 1, cursor: stepIdx === 0 ? "not-allowed" : "pointer" }} onClick={handlePrev} disabled={stepIdx === 0}>◀</button>
             <button
               style={{ ...s.ctrlBtn, ...s.playBtn, background: playing ? "#FFD6C2" : "#C2F0DC" }}
               onClick={() => setPlaying(p => !p)}
             >
               {playing ? "⏸ Pause" : "▶ Play"}
             </button>
-            <button style={s.ctrlBtn} onClick={handleNext} disabled={stepIdx === steps.length - 1}>▶</button>
+            <button style={{ ...s.ctrlBtn, opacity: stepIdx === steps.length - 1 ? 0.4 : 1, cursor: stepIdx === steps.length - 1 ? "not-allowed" : "pointer" }} onClick={handleNext} disabled={stepIdx === steps.length - 1}>▶</button>
             <button style={s.ctrlBtn} onClick={() => setStepIdx(steps.length - 1)}>⏭</button>
 
             <div style={s.speedControl}>
@@ -469,7 +470,7 @@ export default function Visualizer() {
           <div style={{ fontSize: "48px", marginBottom: "12px" }}>{activeProblem.emoji}</div>
           <div style={s.emptyTitle}>{activeProblem.title}</div>
           <div style={s.emptyDesc}>{activeProblem.description}</div>
-          <div style={s.emptyHint}>Izaberi array, klikni ▶ Visualize i gledaj svaki korak!</div>
+          <div style={s.emptyHint}>Select an array, click ▶ Visualize and watch each step!</div>
         </div>
       )}
     </div>

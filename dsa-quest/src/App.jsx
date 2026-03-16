@@ -15,11 +15,29 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={loadingStyle}>
-        <div style={spinnerStyle} />
-        <p style={{ color: "#A89EC0", fontFamily: "'Sora', sans-serif", fontSize: "14px", marginTop: "1rem" }}>
-          Loading your quest...
-        </p>
+      <div style={splashStyle}>
+        <div style={splashCard}>
+          <div style={splashLogo}>⚔️</div>
+          <div style={splashTitle}>DSA<span style={{ color: "#A08FD6" }}>Quest</span></div>
+          <div style={splashSub}>Your 4-month DSA preparation journey</div>
+          <div style={splashFeatures}>
+            {[
+              { icon: "💻", text: "LeetCode problems tracked" },
+              { icon: "📊", text: "XP & level system" },
+              { icon: "🔥", text: "Daily streak" },
+              { icon: "🎬", text: "Algorithm visualizer" },
+            ].map(f => (
+              <div key={f.text} style={splashFeature}>
+                <span>{f.icon}</span>
+                <span>{f.text}</span>
+              </div>
+            ))}
+          </div>
+          <div style={splashSpinnerRow}>
+            <div style={spinnerStyle} />
+            <span style={splashLoading}>Loading your quest...</span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -47,8 +65,18 @@ export default function App() {
 }
 
 const warnStyle = { background: "#FFF3C2", borderBottom: "1.5px solid #E8C840", padding: "8px 1.5rem", fontSize: "12px", fontWeight: 600, color: "#7A5800", fontFamily: "'Sora', sans-serif" };
-const loadingStyle = { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", background: "#FAF8FF" };
-const spinnerStyle = { width: "40px", height: "40px", border: "3px solid #EDE8FF", borderTopColor: "#A08FD6", borderRadius: "50%", animation: "spin 0.8s linear infinite" };
+
+const splashStyle = { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "linear-gradient(135deg, #FAF8FF 0%, #EDE8FF 100%)", fontFamily: "'Sora', sans-serif", padding: "1rem" };
+const splashCard = { background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", border: "1.5px solid #EDE8FF", borderRadius: "28px", padding: "2.5rem 2rem", maxWidth: "380px", width: "100%", textAlign: "center", boxShadow: "0 20px 60px rgba(120,100,200,0.15)" };
+const splashLogo = { fontSize: "52px", lineHeight: 1, marginBottom: "10px" };
+const splashTitle = { fontSize: "32px", fontWeight: 700, color: "#2D2640", letterSpacing: "-0.5px", marginBottom: "6px" };
+const splashSub = { fontSize: "13px", color: "#7B6F96", marginBottom: "1.75rem" };
+const splashFeatures = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "2rem" };
+const splashFeature = { display: "flex", alignItems: "center", gap: "7px", background: "#F5F2FF", borderRadius: "10px", padding: "9px 11px", fontSize: "12px", color: "#4A3F60", textAlign: "left", fontWeight: 500 };
+const splashSpinnerRow = { display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" };
+const spinnerStyle = { width: "20px", height: "20px", border: "2.5px solid #EDE8FF", borderTopColor: "#A08FD6", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 };
+const splashLoading = { fontSize: "13px", color: "#A89EC0" };
+
 const st = document.createElement("style");
 st.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
 document.head.appendChild(st);

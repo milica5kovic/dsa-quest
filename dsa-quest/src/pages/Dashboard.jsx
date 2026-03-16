@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { WEEKS, LEVEL_TITLES, XP_THRESHOLDS, FOUR_QUESTIONS, TWENTY_MIN_RULE } from "../data/plan";
 import DailyCalendar from "../components/DailyCalendar";
+import { localDateKey } from "../utils/date";
 
 function getCurrentWeek(completedProblems) {
   for (const week of WEEKS) {
@@ -14,10 +15,6 @@ function getCurrentWeek(completedProblems) {
 
 function getNextProblem(week, completedProblems) {
   return week.problems.find(p => !completedProblems[`w${week.id}_${p.id}`]);
-}
-
-function localDateKey(date = new Date()) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 const TODAY_TASK_IDS = ["problem", "review", "ctci", "bigO"];
@@ -232,6 +229,7 @@ export default function Dashboard({ progress, toggleTask, logDay, clearDay }) {
             dailyLog={dailyLog}
             logDay={logDay}
             clearDay={clearDay}
+            streak={streak}
           />
         </div>
       </div>

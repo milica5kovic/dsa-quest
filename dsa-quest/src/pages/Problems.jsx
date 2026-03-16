@@ -12,7 +12,7 @@ export default function Problems({ progress, toggleProblem, toggleTask }) {
   const [activeMonth, setActiveMonth] = useState(1);
   const [activeWeek, setActiveWeek] = useState(1);
   const { completedProblems = {}, completedTasks = {} } = progress || {};
-  const week = WEEKS.find(w => w.id === activeWeek);
+  const week = WEEKS.find(w => w.id === activeWeek) || WEEKS[0];
   const monthWeeks = WEEKS.filter(w => w.month === activeMonth);
 
   const solved = week.problems.filter(p => completedProblems[`w${week.id}_${p.id}`]).length;

@@ -5,7 +5,7 @@ import { WORKSHEETS } from "../data/plan";
 export default function Worksheets({ progress, toggleWorksheet }) {
   const [activeWs, setActiveWs] = useState(1);
   const { completedWorksheet = {} } = progress || {};
-  const ws = WORKSHEETS.find(w => w.id === activeWs);
+  const ws = WORKSHEETS.find(w => w.id === activeWs) || WORKSHEETS[0];
 
   const done = ws.items.filter(i => completedWorksheet[`ws${ws.id}_${i.id}`]).length;
   const pct = Math.round((done / ws.items.length) * 100);
