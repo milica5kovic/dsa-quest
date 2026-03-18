@@ -67,7 +67,7 @@ export default function Career() {
 
       {/* 4-month roadmap */}
       <section style={styles.section}>
-        <h2 style={styles.sectionTitle}>🗺️ 4-Month Preparation Roadmap</h2>
+        <h2 style={styles.sectionTitle}>🗺️ 6-Month Preparation Roadmap</h2>
         <div style={styles.phases}>
           {CAREER_PHASES.map((phase, i) => (
             <div key={i} style={styles.phaseCard}>

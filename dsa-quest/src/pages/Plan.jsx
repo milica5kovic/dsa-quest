@@ -7,8 +7,8 @@ export default function Plan({ progress }) {
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <h1 style={styles.title}>📅 Month 1 — Foundation Plan</h1>
-        <p style={styles.sub}>DSA Basics + Portfolio Polish · 8–10 hrs/week · 4 Weeks · 30–40 LeetCode Problems</p>
+        <h1 style={styles.title}>📅 6-Month DSA Plan</h1>
+        <p style={styles.sub}>Foundation → Interview Ready → Competition Ready · 24 Weeks · 150+ LeetCode Problems</p>
       </div>
 
       {/* Philosophy banner */}

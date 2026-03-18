@@ -14,7 +14,7 @@ export default function Worksheets({ progress, toggleWorksheet }) {
     <div style={styles.page}>
       <div style={styles.header}>
         <h1 style={styles.title}>📝 Practice Worksheets</h1>
-        <p style={styles.sub}>8 worksheets · 32 problems · 4 patterns. Use alongside LeetCode.</p>
+        <p style={styles.sub}>{WORKSHEETS.length} worksheets · 6 months · all patterns · use alongside LeetCode.</p>
       </div>
 
       {/* WS tabs — scrollable row */}

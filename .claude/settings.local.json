@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \":*)",
+      "Bash(node -e \"import\\(''./src/data/plan.js''\\).then\\(m => { console.log\\(''WORKSHEETS count:'', m.WORKSHEETS.length\\); console.log\\(''WEEKS count:'', m.WEEKS.length\\); const ids = m.WORKSHEETS.map\\(w => w.id\\); console.log\\(''IDs:'', ids.join\\('',''\\)\\); const dupIds = ids.filter\\(\\(id,i\\) => ids.indexOf\\(id\\) !== i\\); console.log\\(''Duplicate IDs:'', dupIds.length > 0 ? dupIds : ''none''\\); }\\)\")"
+    ]
+  }
+}

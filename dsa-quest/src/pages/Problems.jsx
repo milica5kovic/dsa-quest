@@ -5,8 +5,8 @@ import { WEEKS } from "../data/plan";
 const DIFF_COLORS = { Easy: "#C2F0DC", Medium: "#D4C5F9", Hard: "#FFD6E0" };
 const DIFF_TEXT = { Easy: "#4A8F72", Medium: "#7060C0", Hard: "#C05080" };
 
-const MONTHS = [1, 2, 3, 4];
-const MONTH_LABELS = { 1: "Month 1", 2: "Month 2", 3: "Month 3", 4: "Month 4" };
+const MONTHS = [...new Set(WEEKS.map(w => w.month))].sort((a, b) => a - b);
+const MONTH_LABELS = Object.fromEntries(MONTHS.map(m => [m, `Month ${m}`]));
 
 export default function Problems({ progress, toggleProblem, toggleTask }) {
   const [activeMonth, setActiveMonth] = useState(1);
@@ -186,7 +186,7 @@ const styles = {
   header: { marginBottom: "1.5rem" },
   title: { fontSize: "clamp(22px, 5vw, 30px)", fontWeight: 700, color: "#2D2640" },
   sub: { fontSize: "14px", color: "#7B6F96", marginTop: "4px" },
-  monthRow: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", marginBottom: "10px" },
+  monthRow: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", marginBottom: "10px" },
   monthBtn: { display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", padding: "8px 10px", borderRadius: "12px", border: "1.5px solid", cursor: "pointer", fontFamily: "'Sora', sans-serif", fontSize: "13px", transition: "all 0.2s" },
   tabs: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "8px", marginBottom: "1.25rem" },
   tab: { display: "flex", alignItems: "center", gap: "8px", padding: "10px 12px", borderRadius: "12px", border: "1.5px solid", cursor: "pointer", textAlign: "left", transition: "all 0.2s", fontFamily: "'Sora', sans-serif" },
